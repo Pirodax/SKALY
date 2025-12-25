@@ -1,0 +1,227 @@
+# Claude Code Configuration for SKALY
+
+# Project context file - Claude will read this for context
+context_file: "LLM_CONTEXT.md"
+
+# Documentation directory
+docs_dir: "docs"
+
+# Project-specific settings
+settings:
+  # Default model for this project (sonnet is good balance of speed/quality)
+  default_model: "sonnet"
+
+  # Auto-read these files when starting a conversation
+  auto_read:
+    - "LLM_CONTEXT.md"
+    - "package.json"
+    - "tsconfig.json"
+
+  # Ignore these patterns when searching/exploring
+  ignore_patterns:
+    - "node_modules/**"
+    - ".next/**"
+    - "dist/**"
+    - "build/**"
+    - "*.log"
+    - ".git/**"
+    - "coverage/**"
+
+# Custom prompts for common tasks
+prompts:
+  new_feature: |
+    When implementing a new feature:
+    1. Read the relevant documentation from docs/
+    2. Check the data model (docs/03_DATA_MODEL.md)
+    3. Review calculations if financial logic (docs/04_CALCULATIONS_RULES.md)
+    4. Follow the UI patterns (docs/05_UI_NAVIGATION.md)
+    5. Implement with TypeScript strict mode
+    6. Add proper error handling
+    7. Include validation
+    8. Test the implementation
+
+  fix_bug: |
+    When fixing a bug:
+    1. Understand the issue and reproduce it
+    2. Check related documentation
+    3. Review the calculation logic if financial
+    4. Fix the root cause, not symptoms
+    5. Add tests to prevent regression
+    6. Update documentation if needed
+
+  api_route: |
+    When creating an API route:
+    1. Check API contracts (docs/06_API_CONTRACTS.md)
+    2. Implement authentication check
+    3. Add input validation with Zod
+    4. Follow RESTful conventions
+    5. Add proper error handling
+    6. Document the endpoint
+    7. Add RLS policy if database access
+
+# File templates
+templates:
+  component: |
+    import type { FC } from 'react'
+
+    interface {{ComponentName}}Props {
+      // TODO: Define props
+    }
+
+    export const {{ComponentName}}: FC<{{ComponentName}}Props> = ({
+      // TODO: Destructure props
+    }) => {
+      return (
+        <div>
+          {/* TODO: Implement component */}
+        </div>
+      )
+    }
+
+  api_route: |
+    import { NextRequest, NextResponse } from 'next/server'
+    import { createServerClient } from '@/lib/supabase/server'
+    import { z } from 'zod'
+
+    const schema = z.object({
+      // TODO: Define schema
+    })
+
+    export async function {{METHOD}}(request: NextRequest) {
+      try {
+        // Authentication
+        const supabase = createServerClient()
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+        if (authError || !user) {
+          return NextResponse.json(
+            { error: 'Unauthorized' },
+            { status: 401 }
+          )
+        }
+
+        // Validation
+        const body = await request.json()
+        const result = schema.safeParse(body)
+
+        if (!result.success) {
+          return NextResponse.json(
+            { error: 'Validation failed', details: result.error },
+            { status: 422 }
+          )
+        }
+
+        // TODO: Implement logic
+
+        return NextResponse.json({ success: true })
+      } catch (error) {
+        console.error('API Error:', error)
+        return NextResponse.json(
+          { error: 'Internal server error' },
+          { status: 500 }
+        )
+      }
+    }
+
+  calculation: |
+    /**
+     * {{CalculationName}}
+     *
+     * @description {{Description}}
+     * @param {{ParamName}} - {{ParamDescription}}
+     * @returns {{ReturnDescription}}
+     *
+     * Formula:
+     * ```
+     * {{Formula}}
+     * ```
+     *
+     * Example:
+     * ```typescript
+     * {{Example}}
+     * ```
+     */
+    export function {{FunctionName}}(
+      {{Parameters}}
+    ): {{ReturnType}} {
+      // TODO: Implement calculation
+
+      return result
+    }
+
+# Best practices reminders
+best_practices:
+  - "Always use TypeScript strict mode"
+  - "Server Components by default, Client Components only when needed"
+  - "Use Supabase RLS for data security"
+  - "Validate all user inputs with Zod"
+  - "Follow the calculation formulas in docs/04_CALCULATIONS_RULES.md"
+  - "Use Tailwind CSS for all styling"
+  - "Add proper error handling and user feedback"
+  - "Test financial calculations thoroughly"
+  - "Never log sensitive financial data"
+  - "Keep components small and focused"
+
+# Coding conventions
+conventions:
+  naming:
+    components: "PascalCase (e.g., BusinessCard.tsx)"
+    functions: "camelCase (e.g., calculateNetProfit.ts)"
+    constants: "UPPER_SNAKE_CASE (e.g., MAX_BUSINESSES)"
+    types: "PascalCase with 'I' prefix for interfaces (e.g., ITransaction)"
+
+  file_structure: |
+    app/                    # Next.js pages (App Router)
+      (auth)/              # Auth group
+      dashboard/           # Dashboard pages
+      personal/            # Personal finance pages
+      business/            # Business pages
+      investissement/      # Investment pages
+      patrimoine/          # Net worth pages
+      settings/            # Settings pages
+
+    components/            # React components
+      ui/                 # Reusable UI components
+      features/           # Feature-specific components
+
+    lib/                   # Utilities and helpers
+      supabase/           # Supabase client setup
+      utils/              # Utility functions
+      calculations/       # Calculation functions
+
+    types/                 # TypeScript type definitions
+
+    hooks/                 # Custom React hooks
+
+# Testing strategy
+testing:
+  unit:
+    - "Test all calculation functions"
+    - "Test utility functions"
+    - "Test data transformations"
+
+  integration:
+    - "Test API routes"
+    - "Test database operations"
+    - "Test authentication flows"
+
+  e2e:
+    - "Test critical user flows"
+    - "Test investment capacity calculation"
+    - "Test multi-business features"
+
+# Git commit conventions
+git:
+  commit_format: |
+    type(scope): brief description
+
+    Longer description if needed.
+
+    Types: feat, fix, docs, style, refactor, test, chore
+    Scopes: auth, dashboard, business, personal, investment, net-worth, api, db, ui
+
+    Examples:
+    - feat(business): add multi-business comparison table
+    - fix(calculations): correct URSSAF rate for liberal professions
+    - docs(api): update investment capacity endpoint
+    - refactor(ui): extract MetricCard component
